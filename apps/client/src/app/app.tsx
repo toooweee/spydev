@@ -1,13 +1,11 @@
-import styled from 'styled-components';
-
-const StyledApp = styled.div`
-  // Your style here
-`;
+import { ThemeProvider } from '@mui/material';
+import AppTheme from '../theme';
 
 export function App() {
   return (
-    <StyledApp>
-    </StyledApp>
+    <ThemeProvider theme={AppTheme}>
+
+    </ThemeProvider>
   );
 }
 

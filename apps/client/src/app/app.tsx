@@ -1,18 +1,11 @@
-import styled from 'styled-components';
-import MainPage from './pages/MainPage';
 
-const StyledApp = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #2C3E50;
-`;
-
+import { ThemeProvider } from '@mui/material';
+import AppTheme from '../theme';
 export function App() {
   return (
-    <StyledApp>
-      <MainPage />
-    </StyledApp>
+    <ThemeProvider theme={AppTheme}>
+
+    </ThemeProvider>
   );
 }
 

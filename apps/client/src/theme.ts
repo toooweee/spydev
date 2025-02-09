@@ -24,6 +24,15 @@ const AppTheme: ThemeOptions = createTheme({
       main: "#FFFFFF",
       100: "#ECF0F1",
     },
+  },
+  components: {
+    MuiList: {
+      styleOverrides: {
+        root: {
+
+        }
+      }
+    }
   }
 })
 

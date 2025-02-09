@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import { Header } from './components/Header';
 import MainPage from './pages/MainPage';
 import AppTheme from '../theme';
+import Categories from './pages/CategoriesPage';
 
 const Layout = styled('div')({
   display: 'grid',
@@ -25,12 +26,12 @@ const Main = styled('main')({
 const App = () => {
   return (
     <ThemeProvider theme={AppTheme}>
-    <Layout>
-      <Header />
-      <Main>
+      <Layout>
+        <Header />
+        <Main>
           <MainPage />
-      </Main>
-    </Layout>
+        </Main>
+      </Layout>
     </ThemeProvider>
   );
 };

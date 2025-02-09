@@ -12,11 +12,10 @@ import {
   ListItemButton,
   ListItemText,
 } from '@mui/material';
-import { styled, alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import SearchIcon from '@mui/icons-material/Search';
 
 const navItems = ['Главная', 'Категории', 'Создать страницу', 'О проекте'];
 

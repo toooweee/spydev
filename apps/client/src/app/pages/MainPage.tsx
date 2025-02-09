@@ -39,7 +39,6 @@ const memoryPages = [
 const Layout = styled(Box)({
   display: 'grid',
   gridTemplateRows: 'auto 1fr',
-  height: '100vh',
 });
 
 const SearchContainer = styled(Box)(({ theme }) => ({
@@ -94,7 +93,6 @@ const MainContent = styled(Box)({
 const MainPage = () => {
   return (
     <Layout>
-      {/* Поиск */}
       <SearchContainer>
         <Typography variant="h4">Поиск по страницам памяти</Typography>
         <SearchBar
@@ -107,7 +105,6 @@ const MainPage = () => {
       </SearchContainer>
 
       <MainContent>
-        {/* Галерея последних страниц */}
         <Container>
           <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
             Недавно добавленные страницы
@@ -129,7 +126,6 @@ const MainPage = () => {
           </Grid>
         </Container>
 
-        {/* Категории */}
         <Container sx={{ pb: 4 }}>
           <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
             Категории

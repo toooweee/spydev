@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Dialog,
     DialogActions,
@@ -6,162 +6,172 @@ import {
     DialogTitle,
     Button,
     TextField,
-    Box
-} from '@mui/material';
+    Box,
+    styled,
+} from "@mui/material";
 
-enum AuthMode {
-    login = 'Login',
-    register = 'Register',
+export enum AuthMode {
+    login = "Login",
+    register = "Register",
 }
 
-interface User {
+interface FormData {
     email: string;
     password: string;
+    repeatPassword?: string;
 }
+
+const AuthDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    width: 450px;
+    max-width: 450px; /* Фиксируем максимальную ширину */
+    overflow: auto; /* Добавляем скролл, если контент превышает размеры */
+  }
+`;
 
 interface LoginDialogWindowProps {
     open: boolean;
     handleOpenAuthDialog: () => void;
+    authMode: AuthMode | string;
 }
 
-const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({ open, handleOpenAuthDialog, }) => {
-    const [user, setUser] = useState<User>({ email: "", password: "" });
-    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-    const [authMode, setAuthMode] = useState<string>(AuthMode.login)
+const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
+                                                                 open,
+                                                                 handleOpenAuthDialog,
+                                                                 authMode
+                                                             }) => {
+    // Используем единое состояние для данных формы
+    const [formData, setFormData] = useState<FormData>({
+        email: "",
+        password: "",
+        repeatPassword: "",
+    });
+    const [errors, setErrors] = useState<Partial<FormData>>({});
+    const [cAuthMode, setCAuthMode] = useState<AuthMode>(AuthMode.login);
 
+    useEffect(() => {
+        authMode = cAuthMode;
+    }, [cAuthMode]);
+
+    // Обработчик ввода для всех полей
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const { name, value } = e.target;
-            setUser((prev) => ({ ...prev, [name]: value }));
+            setFormData((prev) => ({ ...prev, [name]: value }));
         },
         []
     );
 
-    const validateUser = useCallback((user: User): boolean => {
-        const newErrors: { email?: string; password?: string } = {};
+    // Функция валидации данных формы
+    const validateFormData = useCallback((): boolean => {
+        const newErrors: Partial<FormData> = {};
         let isValid = true;
 
-        if (!user.email) {
+        if (!formData.email) {
             newErrors.email = "Email обязателен";
             isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Некорректный email";
             isValid = false;
         }
 
-        if (!user.password) {
+        if (!formData.password) {
             newErrors.password = "Пароль обязателен";
             isValid = false;
-        } else if (user.password.length < 6) {
+        } else if (formData.password.length < 6) {
             newErrors.password = "Пароль должен содержать не менее 6 символов";
             isValid = false;
         }
 
+        if (authMode === AuthMode.register) {
+            if (!formData.repeatPassword) {
+                newErrors.repeatPassword = "Подтверждение пароля обязательно";
+                isValid = false;
+            } else if (formData.repeatPassword !== formData.password) {
+                newErrors.repeatPassword = "Пароли не совпадают";
+                isValid = false;
+            }
+        }
+
         setErrors(newErrors);
         return isValid;
-    }, []);
+    }, [formData, authMode]);
 
     const handleSubmit = useCallback(() => {
-        if (validateUser(user)) {
-            console.log(user);
-            handleOpenAuthDialog();
+        if (validateFormData()) {
+            console.log("Отправляем данные:", formData);
+            // Здесь можно добавить вызов API или другую логику
+            handleOpenAuthDialog(); // Закрываем диалог
         }
-    }, [user, validateUser, handleOpenAuthDialog]);
+    }, [validateFormData, formData, handleOpenAuthDialog]);
 
     return (
-        <Dialog open={open} onClose={handleOpenAuthDialog}>
-            {authMode === AuthMode.login && (
-                <>
-                    <DialogTitle>Войти</DialogTitle>
-                    <DialogContent>
-                        <Box display="flex" flexDirection="column" gap={2} mt={1}>
-                            <TextField
-                                autoFocus
-                                name="email"
-                                placeholder="Email"
-                                variant="outlined"
-                                value={user.email}
-                                onChange={handleInputChange}
-                                error={!!errors.email}
-                                helperText={errors.email}
-                            />
-                            <TextField
-                                name="password"
-                                type="password"
-                                placeholder="Пароль"
-                                variant="outlined"
-                                value={user.password}
-                                onChange={handleInputChange}
-                                error={!!errors.password}
-                                helperText={errors.password}
-                            />
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={handleOpenAuthDialog}
-                            variant="contained"
-                            color="error"
-                        >
-                            Закрыть
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handleSubmit}>
-                            Отправить
-                        </Button>
-                    </DialogActions>
-                    <Button
-                        variant="text"
-                        onClick={() => setAuthMode(AuthMode.register)}
-                    >Зарегистрироваться</Button>
-                </>
-            )}
-            {authMode === AuthMode.register && (
-                <>
-                    <DialogTitle>Регистрация</DialogTitle>
-                    <DialogContent>
-                        <Box display="flex" flexDirection="column" gap={2} mt={1}>
-                            <TextField
-                                autoFocus
-                                name="email"
-                                placeholder="Email"
-                                variant="outlined"
-                                value={user.email}
-                                onChange={handleInputChange}
-                                error={!!errors.email}
-                                helperText={errors.email}
-                            />
-                            <TextField
-                                name="password"
-                                type="password"
-                                placeholder="Пароль"
-                                variant="outlined"
-                                value={user.password}
-                                onChange={handleInputChange}
-                                error={!!errors.password}
-                                helperText={errors.password}
-                            />
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={handleOpenAuthDialog}
-                            variant="contained"
-                            color="error"
-                        >
-                            Закрыть
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handleSubmit}>
-                            Отправить
-                        </Button>
-                    </DialogActions>
-                    <Button
-                        variant="text"
-                        onClick={() => setAuthMode(AuthMode.login)}
-                    >Войти</Button>
-                </>
-            )}
-
-        </Dialog>
+        <AuthDialog open={open} onClose={handleOpenAuthDialog}>
+            <DialogTitle>
+                {authMode === AuthMode.login ? "Войти" : "Регистрация"}
+            </DialogTitle>
+            <DialogContent>
+                <Box display="flex" flexDirection="column" gap={2} mt={1}>
+                    <TextField
+                        autoFocus
+                        name="email"
+                        placeholder="Email"
+                        variant="outlined"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                    />
+                    <TextField
+                        name="password"
+                        type="password"
+                        placeholder="Пароль"
+                        variant="outlined"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        error={!!errors.password}
+                        helperText={errors.password}
+                    />
+                    {authMode === AuthMode.register && (
+                        <TextField
+                            name="repeatPassword"
+                            type="password"
+                            placeholder="Подтверждение пароля"
+                            variant="outlined"
+                            value={formData.repeatPassword}
+                            onChange={handleInputChange}
+                            error={!!errors.repeatPassword}
+                            helperText={errors.repeatPassword}
+                        />
+                    )}
+                </Box>
+            </DialogContent>
+            <DialogActions
+                sx={{
+                    justifyContent: "space-between",
+                    margin: "0 auto",
+                    width: "200px",
+                }}
+            >
+                <Button onClick={handleOpenAuthDialog} variant="contained" color="error">
+                    Закрыть
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleSubmit}>
+                    Отправить
+                </Button>
+            </DialogActions>
+            <Box textAlign="center" mb={2}>
+                {authMode === AuthMode.login ? (
+                    <Button variant="text" onClick={() => setCAuthMode(AuthMode.register)}>
+                        Зарегистрироваться
+                    </Button>
+                ) : (
+                    <Button variant="text" onClick={() => setCAuthMode(AuthMode.login)}>
+                        Войти
+                    </Button>
+                )}
+            </Box>
+        </AuthDialog>
     );
 };
 

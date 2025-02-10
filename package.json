@@ -22,7 +22,9 @@
     "serve:api": "nx serve api",
     "serve:client": "nx serve client",
     "build:api": "nx build api",
-    "build:client": "nx build client"
+    "build:client": "nx build client",
+    "docker:up": "docker-compose -f ./apps/api/docker/postgres/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f ./apps/api/docker/postgres/docker-compose.yml down"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",

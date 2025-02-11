@@ -31,6 +31,10 @@ export class AuthService {
         return this.tokenService.generateTokens(user, agent);
     }
 
+    logout(token: string) {
+        return this.tokenService.deleteRefreshToken(token)
+    }
+
     private async validateUser(email: string, password: string) {
         const user = await this.userService.findOne(email);
 

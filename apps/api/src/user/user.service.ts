@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt';
 
 @Injectable()
@@ -24,21 +24,31 @@ export class UserService {
         return this.prismaService.user.findMany();
     }
 
-    findOne(idOrEmail: string) {
-        return this.prismaService.user.findFirst({
+    async findOne(idOrEmail: string) {
+        const user =  this.prismaService.user.findFirst({
             where: {
                 OR: [{ id: idOrEmail }, { email: idOrEmail }],
             },
         });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return user;
     }
 
     update(id: string) {
         // return this.prismaService.user.update();
     }
 
-    delete(id: string) {
+    delete(id: string, user) {
+        if (user.id !== id && !user.roles.includes(Role.ADMIN)) {
+            throw new ForbiddenException('');
+        }
+
         return this.prismaService.user.delete({
-            where: { id },
+            where: { id }, select: { id: true },
         });
     }
 

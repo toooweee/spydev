@@ -13,6 +13,8 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import {UserResponse} from "./responses";
+import { CurrentUser } from '@app/common/decorators';
+import { JwtPayload } from '../auth/interfaces';
 
 @Controller('user')
 export class UserController {
@@ -53,7 +55,7 @@ export class UserController {
 
     @UseInterceptors(ClassSerializerInterceptor)
     @Delete(':id')
-    async delete(@Param('id', ParseUUIDPipe) id: string) {
-        return await this.userService.delete(id);
+    async delete(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+        return this.userService.delete(id, user);
     }
 }

@@ -2,8 +2,9 @@ import { Controller, Get, Res, UnauthorizedException } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { Response } from 'express';
 import { REFRESH_TOKEN } from './constants';
-import { Cookie, UserAgent } from '@app/common/decorators';
+import { Cookie, Public, UserAgent } from '@app/common/decorators';
 
+@Public()
 @Controller('token')
 export class TokenController {
     constructor(private readonly tokenService: TokenService) {}

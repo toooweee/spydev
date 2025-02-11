@@ -32,6 +32,6 @@ export class AuthController {
             throw new BadRequestException('An error occurred during user registration');
         }
 
-        return await this.authService.register(registerDto);
+        return user;
     }
 }

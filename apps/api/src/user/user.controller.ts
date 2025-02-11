@@ -1,33 +1,59 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    ParseUUIDPipe,
+    UseInterceptors,
+    ClassSerializerInterceptor
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import {UserResponse} from "./responses";
 
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post()
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.userService.create(createUserDto);
+    async create(@Body() createUserDto: CreateUserDto) {
+        const user = await this.userService.create(createUserDto);
+        return new UserResponse(user)
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get()
-    findAll() {
-        return this.userService.findAll();
+    async findAll() {
+        const result = []
+        const users = await this.userService.findAll();
+
+        users.forEach(user => {
+            result.push(new UserResponse(user));
+        })
+
+        return result
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get(':id')
-    findOne(@Param('id') idOrEmail: string) {
-        return this.userService.findOne(idOrEmail);
+    async findOne(@Param('id') idOrEmail: string) {
+        const user = await this.userService.findOne(idOrEmail);
+        return new UserResponse(user)
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Patch(':id')
-    update(@Param('id', ParseUUIDPipe) id: string) {
+    async update(@Param('id', ParseUUIDPipe) id: string) {
         return this.userService.update(id);
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Delete(':id')
-    delete(@Param('id', ParseUUIDPipe) id: string) {
-        return this.userService.delete(id);
+    async delete(@Param('id', ParseUUIDPipe) id: string) {
+        return await this.userService.delete(id);
     }
 }

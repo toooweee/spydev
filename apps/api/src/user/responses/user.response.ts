@@ -1,5 +1,5 @@
-import {$Enums, User} from "@prisma/client";
-import {Exclude} from "class-transformer";
+import { $Enums, User } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class UserResponse implements User {
     roles: $Enums.Role;
@@ -12,6 +12,6 @@ export class UserResponse implements User {
     updatedAt: Date;
 
     constructor(user: User) {
-        Object.assign(this, user)
+        Object.assign(this, user);
     }
 }

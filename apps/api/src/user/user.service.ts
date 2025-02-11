@@ -44,7 +44,7 @@ export class UserService {
 
     delete(id: string, user) {
         if (user.id !== id && !user.roles.includes(Role.ADMIN)) {
-            throw new ForbiddenException('User not found');
+            throw new ForbiddenException('');
         }
 
         return this.prismaService.user.delete({

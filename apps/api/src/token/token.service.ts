@@ -48,6 +48,12 @@ export class TokenService {
         return this.generateTokens(user, agent);
     }
 
+    deleteRefreshToken(token: string) {
+        return this.prismaService.token.delete({
+            where: { token: token },
+        })
+    }
+
     private generateAccessToken(user: User): string {
         return this.jwtService.sign({
             id: user.id,

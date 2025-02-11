@@ -24,36 +24,36 @@ interface FormData {
 const AuthDialog = styled(Dialog)`
   .MuiDialog-paper {
     width: 450px;
-    max-width: 450px; /* Фиксируем максимальную ширину */
-    overflow: auto; /* Добавляем скролл, если контент превышает размеры */
+    max-width: 450px;
+    overflow: auto;
   }
 `;
 
 interface LoginDialogWindowProps {
     open: boolean;
     handleOpenAuthDialog: () => void;
-    authMode: AuthMode | string;
+    authModeH?: AuthMode | string;
 }
 
 const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
                                                                  open,
                                                                  handleOpenAuthDialog,
-                                                                 authMode
+                                                                 authModeH
                                                              }) => {
-    // Используем единое состояние для данных формы
     const [formData, setFormData] = useState<FormData>({
         email: "",
         password: "",
         repeatPassword: "",
     });
     const [errors, setErrors] = useState<Partial<FormData>>({});
-    const [cAuthMode, setCAuthMode] = useState<AuthMode>(AuthMode.login);
+    const [authMode, setAuthMode] = useState<string>(AuthMode.login);
 
     useEffect(() => {
-        authMode = cAuthMode;
-    }, [cAuthMode]);
+        if (authModeH !== undefined) {
+            setAuthMode(authModeH);
+        }
+    }, [authModeH]);
 
-    // Обработчик ввода для всех полей
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const { name, value } = e.target;
@@ -62,7 +62,6 @@ const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
         []
     );
 
-    // Функция валидации данных формы
     const validateFormData = useCallback((): boolean => {
         const newErrors: Partial<FormData> = {};
         let isValid = true;
@@ -100,8 +99,7 @@ const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
     const handleSubmit = useCallback(() => {
         if (validateFormData()) {
             console.log("Отправляем данные:", formData);
-            // Здесь можно добавить вызов API или другую логику
-            handleOpenAuthDialog(); // Закрываем диалог
+            handleOpenAuthDialog();
         }
     }, [validateFormData, formData, handleOpenAuthDialog]);
 
@@ -150,23 +148,23 @@ const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
                 sx={{
                     justifyContent: "space-between",
                     margin: "0 auto",
-                    width: "200px",
+                    width: "70%",
                 }}
             >
                 <Button onClick={handleOpenAuthDialog} variant="contained" color="error">
                     Закрыть
                 </Button>
-                <Button variant="contained" color="primary" onClick={handleSubmit}>
+                <Button variant="contained" color="primary" onClick={handleSubmit} size='large'>
                     Отправить
                 </Button>
             </DialogActions>
             <Box textAlign="center" mb={2}>
                 {authMode === AuthMode.login ? (
-                    <Button variant="text" onClick={() => setCAuthMode(AuthMode.register)}>
+                    <Button variant="text" onClick={() => setAuthMode(AuthMode.register)}>
                         Зарегистрироваться
                     </Button>
                 ) : (
-                    <Button variant="text" onClick={() => setCAuthMode(AuthMode.login)}>
+                    <Button variant="text" onClick={() => setAuthMode(AuthMode.login)}>
                         Войти
                     </Button>
                 )}

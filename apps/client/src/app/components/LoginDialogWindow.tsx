@@ -1,113 +1,94 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, Box, styled } from '@mui/material';
 import {
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Button,
-    TextField,
-    Box,
-    styled,
-} from "@mui/material";
+    authRequestDTO,
+    FormData,
+    loginResponseDTO,
+    registerResponseDTO,
+    validateFormData
+} from '../Helpers/LoginHelpers';
+import apiService from '../Service/ApiService';
+import { API_CONFIG } from '../../config';
 
-export enum AuthMode {
-    login = "Login",
-    register = "Register",
-}
-
-interface FormData {
-    email: string;
-    password: string;
-    repeatPassword?: string;
+enum AuthMode {
+    login = 'Login',
+    register = 'Register',
 }
 
 const AuthDialog = styled(Dialog)`
-  .MuiDialog-paper {
-    width: 450px;
-    max-width: 450px;
-    overflow: auto;
-  }
+    .MuiDialog-paper {
+        width: 450px;
+        max-width: 450px;
+        overflow: auto;
+    }
 `;
 
 interface LoginDialogWindowProps {
     open: boolean;
-    handleOpenAuthDialog: () => void;
-    authModeH?: AuthMode | string;
+    handleCloseAuthDialog: () => void;
 }
 
-const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
-                                                                 open,
-                                                                 handleOpenAuthDialog,
-                                                                 authModeH
-                                                             }) => {
+const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({ open, handleCloseAuthDialog }) => {
     const [formData, setFormData] = useState<FormData>({
-        email: "",
-        password: "",
-        repeatPassword: "",
+        email: '',
+        password: '',
+        repeatPassword: '',
     });
+
     const [errors, setErrors] = useState<Partial<FormData>>({});
     const [authMode, setAuthMode] = useState<string>(AuthMode.login);
 
     useEffect(() => {
-        if (authModeH !== undefined) {
-            setAuthMode(authModeH);
-        }
-    }, [authModeH]);
+        setErrors({});
+        setFormData({
+            email: '',
+            password: '',
+            repeatPassword: '',
+        });
+        setAuthMode(AuthMode.login);
+    }, [open]);
 
-    const handleInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const { name, value } = e.target;
-            setFormData((prev) => ({ ...prev, [name]: value }));
-        },
-        []
-    );
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    }, []);
 
-    const validateFormData = useCallback((): boolean => {
-        const newErrors: Partial<FormData> = {};
-        let isValid = true;
 
-        if (!formData.email) {
-            newErrors.email = "Email обязателен";
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = "Некорректный email";
-            isValid = false;
-        }
-
-        if (!formData.password) {
-            newErrors.password = "Пароль обязателен";
-            isValid = false;
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Пароль должен содержать не менее 6 символов";
-            isValid = false;
-        }
-
-        if (authMode === AuthMode.register) {
-            if (!formData.repeatPassword) {
-                newErrors.repeatPassword = "Подтверждение пароля обязательно";
-                isValid = false;
-            } else if (formData.repeatPassword !== formData.password) {
-                newErrors.repeatPassword = "Пароли не совпадают";
-                isValid = false;
+    const handleSubmit = async () => {
+        setErrors(validateFormData(formData));
+        const url = authMode === AuthMode.login
+            ? API_CONFIG.AUTH_LOGIN
+            : API_CONFIG.AUTH_REGISTER;
+        console.log(url)
+        if (url) {
+            const request: authRequestDTO = {
+                email: formData.email,
+                password: formData.password,
+            };
+            if(authMode == AuthMode.login) {
+                const response = await apiService.post<loginResponseDTO, authRequestDTO>(
+                    `${API_CONFIG.HOST}${url}`,
+                    request);
+                if(response.status === 201) {
+                    localStorage.setItem('token', JSON.stringify(response.data.accessToken.split(' ')[1]));
+                    handleCloseAuthDialog();
+                }
             }
-        }
+            else{
+                const response = await apiService.post<registerResponseDTO, authRequestDTO>(
+                    `${API_CONFIG.HOST}${url}`,
+                    request);
+                if(response.status === 204) {
+                    handleCloseAuthDialog();
+                }
+            }
 
-        setErrors(newErrors);
-        return isValid;
-    }, [formData, authMode]);
-
-    const handleSubmit = useCallback(() => {
-        if (validateFormData()) {
-            console.log("Отправляем данные:", formData);
-            handleOpenAuthDialog();
         }
-    }, [validateFormData, formData, handleOpenAuthDialog]);
+    };
 
     return (
-        <AuthDialog open={open} onClose={handleOpenAuthDialog}>
-            <DialogTitle>
-                {authMode === AuthMode.login ? "Войти" : "Регистрация"}
-            </DialogTitle>
+        <AuthDialog open={open}>
+            <DialogTitle>{authMode === AuthMode.login ? 'Войти' : 'Регистрация'}</DialogTitle>
             <DialogContent>
                 <Box display="flex" flexDirection="column" gap={2} mt={1}>
                     <TextField
@@ -146,15 +127,15 @@ const LoginDialogWindow: React.FC<LoginDialogWindowProps> = ({
             </DialogContent>
             <DialogActions
                 sx={{
-                    justifyContent: "space-between",
-                    margin: "0 auto",
-                    width: "70%",
+                    justifyContent: 'space-between',
+                    margin: '0 auto',
+                    width: '70%',
                 }}
             >
-                <Button onClick={handleOpenAuthDialog} variant="contained" color="error">
+                <Button onClick={handleCloseAuthDialog} variant="contained" color="error">
                     Закрыть
                 </Button>
-                <Button variant="contained" color="primary" onClick={handleSubmit} size='large'>
+                <Button variant="contained" color="primary" onClick={handleSubmit} size="large">
                     Отправить
                 </Button>
             </DialogActions>

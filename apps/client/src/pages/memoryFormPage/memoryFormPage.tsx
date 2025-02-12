@@ -17,10 +17,6 @@ const TestPage = () => {
             >
                 Войти
             </Button>
-            <LoginDialogWindow
-                open={openAuthDialog}
-                handleOpenAuthDialog={handleOpenAuthDialog}
-            />
         </div>
     );
 };

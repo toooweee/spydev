@@ -24,7 +24,30 @@ const AppTheme: ThemeOptions = createTheme({
       main: "#FFFFFF",
       100: "#ECF0F1",
     },
-  }
+  },
+    typography: {
+        fontFamily: '"Montserrat", sans-serif',
+        fontSize: 16,
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    fontSize: '1rem',
+                    padding: '0.75rem 1.5rem',
+                },
+            },
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    fontSize: '1rem',
+                },
+            },
+        },
+    },
+    // При необходимости можно увеличить базовый отступ
+    spacing: 8,
 })
 
 export default AppTheme;

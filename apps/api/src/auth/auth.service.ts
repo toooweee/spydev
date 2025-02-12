@@ -1,34 +1,57 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
+import { TokenService } from '../token/token.service';
+import { compareSync } from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-    private readonly logger = new Logger('AuthService');
-    constructor(private readonly userService: UserService) {}
+    private readonly logger = new Logger(AuthService.name);
+
+    constructor(private readonly userService: UserService, private readonly tokenService: TokenService) {}
 
     async register(registerDto: RegisterDto) {
-        return this.userService.create(registerDto).catch((err) => {
-            this.logger.error(err);
-            return null;
-        });
+        const existingUser = await this.userService.findOne(registerDto.email);
+        if (existingUser) {
+            this.logger.error(`User with email ${registerDto.email} already exists`);
+            throw new ConflictException('User already exists');
+        }
+
+        try {
+            return await this.userService.create(registerDto);
+        } catch (error) {
+            this.logger.error(`Failed to create user: ${error.message}`);
+            throw new ConflictException('Registration failed');
+        }
     }
 
-    login(loginDto: LoginDto) {
-        return `This action returns all auth`;
+    async login(loginDto: LoginDto, agent: string) {
+        const user = await this.validateUser(loginDto.email, loginDto.password);
+        return this.tokenService.generateTokens(user, agent);
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} auth`;
+    logout(token: string) {
+        return this.tokenService.deleteRefreshToken(token)
     }
 
-    update(id: number, updateAuthDto: UpdateAuthDto) {
-        return `This action updates a #${id} auth`;
+    private async validateUser(email: string, password: string) {
+        const user = await this.userService.findOne(email);
+
+        if (!user) {
+            this.logger.error(`User with email ${email} not found`);
+            throw new NotFoundException('Invalid credentials');
+        }
+
+        if (!this.comparePassword(password, user.password)) {
+            this.logger.error(`Invalid password for user ${email}`);
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        return user;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} auth`;
+    private comparePassword(password: string, hash: string): boolean {
+        return compareSync(password, hash);
     }
 }

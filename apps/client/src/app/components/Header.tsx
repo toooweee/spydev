@@ -15,24 +15,22 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import { AuthMode } from './LoginDialogWindow';
+import LoginDialogWindow from './LoginDialogWindow';
 
 const navItems = ['Главная', 'Категории', 'Создать страницу', 'О проекте'];
 
-interface HeaderProps {
-    setOpen: (open: boolean) => void;
-    opened: boolean;
-    setAuthMode: (mode: string) => void;
-}
-
-export const Header: FC<HeaderProps> = ({setOpen, opened, setAuthMode}) => {
+export const Header = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [openAuthDialog, setOpenAuthDialog] = useState(false);
 
-    const AuthHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        setAuthMode(e.currentTarget.name as AuthMode);
-        setOpen(!opened)
+    const AuthHandler = () => {
+        setOpenAuthDialog(true);
+    }
+
+    const handleCloseAuthDialog = () => {
+        setOpenAuthDialog(false);
     }
 
     const handleDrawerToggle = () => {
@@ -64,6 +62,7 @@ export const Header: FC<HeaderProps> = ({setOpen, opened, setAuthMode}) => {
 
     return (
         <AppBar position="sticky" sx={{ gridArea: 'header' }}>
+            <LoginDialogWindow open={openAuthDialog} handleCloseAuthDialog={handleCloseAuthDialog}/>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 {/* Мобильное меню */}
                 {isMobile && (
@@ -110,7 +109,7 @@ export const Header: FC<HeaderProps> = ({setOpen, opened, setAuthMode}) => {
                         name="login"
                         color="inherit"
                         sx={{ fontSize: '0.875rem'}}
-                        onClick={(e) => AuthHandler(e)}
+                        onClick={AuthHandler}
                     >
                         Войти / Регистрация
                     </Button>
